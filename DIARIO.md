@@ -139,6 +139,45 @@ será feita incrementalmente.
 
 ---
 
+## 25/06/2026 — Ferramentas CLI: mkverity, verify_block, corrupt (E2)
+
+### Decisões de Projeto
+
+**1. `mkverity` aceita `block_size` opcional (padrão 4096)**
+- Mantém flexibilidade para experimentos com blocos diferentes.
+- Valida o intervalo 1..65536 para evitar abusos.
+
+**2. `verify_block` carrega a árvore do `.verity` e lê o bloco da imagem**
+- Não depende de estado em memória — pode ser chamado isoladamente.
+- Retorna exit code 0 (OK) ou 1 (falha), adequado para uso em scripts.
+
+**3. `corrupt` opera diretamente no arquivo (in-place)**
+- Usa block_size fixo de 4096 (mesma convenção padrão do `mkverity`).
+- Intencionalmente simples: apenas um byte por chamada, para teste controlado.
+- Imprime o valor original → novo para rastreabilidade no log.
+
+**4. Target `stress` no Makefile**
+- Automatiza o ciclo: gerar imagem → mkverity → verify (OK) → corrupt → verify (FAIL) → verify outro bloco (OK).
+- Requer `dd` e ambiente Unix/WSL para rodar; no Windows é executado manualmente.
+
+### Bugs encontrados
+*(Nenhum nesta sessão)*
+
+### Uso de IA
+
+**Prompt:** "Realize a próxima etapa" (ferramentas CLI E2).
+
+**O que a IA gerou corretamente:**
+- `mkverity.c`, `verify_block.c`, `corrupt.c` com zero warnings (`-Wall -Wextra -Werror`).
+- Makefile atualizado com targets das ferramentas e `stress` automatizado.
+- Teste de fogo end-to-end validado: bloco 3 corrompido detectado, bloco 0 intacto permanece OK.
+
+**O que a IA errou:** Nenhum erro identificado nesta sessão.
+
+**O que a equipe corrigiu:** N/A.
+
+---
+
 ## DD/MM/AAAA — (preencher)
 
 ### Decisões de Projeto
