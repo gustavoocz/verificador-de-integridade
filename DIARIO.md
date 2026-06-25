@@ -178,6 +178,52 @@ será feita incrementalmente.
 
 ---
 
+## 25/06/2026 — Cache LRU de nós (E3)
+
+### Decisões de Projeto
+
+**1. Hash table com endereçamento aberto (linear probing + tombstones)**
+- Sentinels: `SLOT_EMPTY = UINT64_MAX` (nunca usado) e `SLOT_DELETED = UINT64_MAX-1` (tombstone pós-evicção).
+- Fator de carga ≤ 0.5 (`table_sz = 2 * capacity + 1`) — garante que a sondagem é curta.
+- Tombstones permitem que `find_entry` continue a sondagem após uma entrada eviccionada sem quebrar a cadeia de colisões.
+
+**2. Lista duplamente encadeada para política LRU**
+- `lru_head` = MRU (mais recentemente usado); `lru_tail` = LRU (candidato à evicção).
+- `lru_move_to_head` ao acessar qualquer entrada já presente.
+- Ponteiros `lru_prev`/`lru_next` vivem dentro da própria entrada do hash table — sem alocação extra.
+
+**3. Fibonacci hashing para distribuição uniforme**
+- `key * 11400714819323198485ULL` distribui índices sequenciais de forma uniforme, evitando clustering com sondagem linear.
+
+**4. Compatibilidade com gcc 4.9.2**
+- `%zu` substituído por `%lu` com cast `(unsigned long)` (mesma limitação encontrada nas sessões anteriores).
+
+### Bugs encontrados
+
+**Bug 1 — `%zu` não reconhecido pelo gcc 4.9.2**
+- Mesma causa raiz da sessão anterior. Corrigido antes de commitar.
+
+**Bug 2 — Comparação signed/unsigned no teste**
+- `c.evictions == N - (int)CAP` gerava `-Werror=sign-compare`.
+- Corrigido com cast explícito: `(uint64_t)(N - (int)CAP)`.
+
+### Uso de IA
+
+**Prompt:** "Siga para a implementação de node_cache.c com a estrutura descrita no header."
+
+**O que a IA gerou corretamente:**
+- `node_cache.c` com hash table (linear probing + tombstones) + lista LRU integrada.
+- `test_node_cache.c`: 60 verificações cobrindo init, put/get, ordem LRU, evicção, evicção com acessos intercalados, atualização de entrada existente, invalidate, clear, estatísticas, null-safety e stress (64 itens em cache de 16).
+- Makefile atualizado com `node_cache.c` e target `test_node_cache`.
+
+**O que a IA errou:**
+- Usou `%zu` e comparação signed/unsigned — incompatíveis com gcc 4.9.2.
+
+**O que a equipe corrigiu:**
+- Substituiu `%zu` por `%lu` com cast e corrigiu a comparação com cast explícito.
+
+---
+
 ## DD/MM/AAAA — (preencher)
 
 ### Decisões de Projeto
