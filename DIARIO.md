@@ -92,6 +92,53 @@ será feita incrementalmente.
 
 ---
 
+## 25/06/2026 — Merkle tree: construção, persistência e verificação (E1/E2)
+
+### Decisões de Projeto
+
+**1. Indexação BFS em array plano**
+- Nós armazenados em array linear: raiz=0, filhos de `i` em `2i+1` e `2i+2`.
+- Folha do bloco `b` = `(num_leaves - 1) + b`.
+- Permite acesso O(1) a qualquer nó via `fseek` no arquivo `.verity`.
+
+**2. Blocos de padding para potência de 2**
+- Folhas virtuais (para completar `num_leaves`) recebem `SHA-256(bloco_de_zeros)`.
+- Garante que a árvore é sempre binária completa sem casos especiais no algoritmo.
+
+**3. Critério de parada da verificação: caminho folha→raiz**
+- `verify_block` percorre apenas `O(log n)` nós — não relê a árvore inteira.
+- Sobe usando o hash irmão já armazenado; compara cada nó pai com o valor gravado.
+- Verificação final contra `root_hash` (campo separado do array, golden truth).
+
+**4. Formato do `.verity`**
+- Magic `VERITY14` + versão (u32) + block_size (u32) + num_blocks (u64) + root_hash (32 B).
+- Seguido do array BFS completo de hashes.
+- Valores gravados em representação nativa (máquina homogênea; portabilidade big/little-endian deixada para versão futura).
+
+### Bugs encontrados
+
+**Bug 1 — `%llu` não reconhecido pelo gcc 4.9.2 (TDM-GCC Windows)**
+- **Descrição:** `hash_tree.c` usava `%llu` com cast `(unsigned long long)` para imprimir `uint64_t`. O gcc 4.9.2 do Windows não reconhece `%llu` e emitiu erro `-Werror=format=`.
+- **Causa raiz:** Versão antiga do gcc bundled no TDM-GCC (4.9.2) não suporta o especificador `%llu` em `printf`.
+- **Solução:** Substituído por `%lu` com cast `(unsigned long)`. Aceitável para os valores do projeto (imagens < 4 GB de blocos).
+
+### Uso de IA
+
+**Prompt:** "Desenvolva funções para construir e persistir uma árvore e ler e verificar um bloco."
+
+**O que a IA gerou corretamente:**
+- `hash_tree.c` completo: `build` (fases folhas + nós internos bottom-up), `save`/`load` com magic VERITY14, `verify_block` O(log n) e utilitários.
+- `test_hash_tree.c`: 41 verificações cobrindo `next_power_of_two`, construção (1 e 3 blocos), round trip save/load, magic inválido, verificação de blocos íntegros, **teste de fogo** (corrupção de 1 byte detectada, demais blocos intactos) e verificação pós-load.
+- Makefile atualizado com `hash_tree.c` na biblioteca e target `test_hash_tree`.
+
+**O que a IA errou:**
+- Usou `%llu` / `unsigned long long` em `printf`, incompatível com gcc 4.9.2 no Windows.
+
+**O que a equipe corrigiu:**
+- Substituiu `%llu` por `%lu` com cast `(unsigned long)` para compatibilidade com o compilador do ambiente.
+
+---
+
 ## DD/MM/AAAA — (preencher)
 
 ### Decisões de Projeto
