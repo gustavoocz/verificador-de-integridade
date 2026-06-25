@@ -1,0 +1,48 @@
+# ─── Artefatos de compilação ──────────────────────────────────────────────────
+build/
+*.o
+*.a
+*.so
+
+# ─── Binários gerados pelo Makefile ───────────────────────────────────────────
+mkverity
+verify_block
+corrupt
+
+# ─── Arquivos de imagem e árvore de hash (gerados em testes/stress) ───────────
+*.img
+*.verity
+
+# ─── Arquivos de depuração e análise ──────────────────────────────────────────
+*.out
+*.core
+core
+vgcore.*
+
+# ─── Saída de ferramentas (AddressSanitizer, Valgrind, TSan) ──────────────────
+*.log
+sanitizer_report_*
+
+# ─── Gráficos gerados pelos scripts ───────────────────────────────────────────
+*.png
+*.svg
+*.pdf
+!Trabalho_Interdisciplinar_ED_SO_Ifes.pdf
+
+# ─── Dados experimentais coletados (CSV bruto) ────────────────────────────────
+data/
+
+# ─── Relatório em PDF (gerado, não versionado até entrega final) ──────────────
+relatorio.pdf
+
+# ─── Temporários de editor ────────────────────────────────────────────────────
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.code-workspace
