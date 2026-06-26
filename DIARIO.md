@@ -300,7 +300,7 @@ será feita incrementalmente.
 
 ---
 
-## 26/06/2026 — Integração de scan, target memcheck, README, test_integration.c, plot_benchmark.py e dump_verity.c (E4/Polimento)
+## 26/06/2026 — Integração de scan, target memcheck, README, testes e análise de complexidade (E4/Polimento)
 
 ### Decisões de Projeto
 
@@ -333,6 +333,11 @@ será feita incrementalmente.
 - Caso seja fornecido o argumento `--full`, realiza a impressão de todos os nós em ordem BFS na árvore, rotulando-os dinamicamente (raiz, interno ou folha) e alinhando perfeitamente a saída dos hashes.
 - A ferramenta foi registrada na variável `TOOLS` e integrada com sua respectiva regra de compilação no Makefile.
 
+**7. Dedução e análise de complexidade no Relatório Técnico**
+- Elaborada e incorporada a seção `5. Complexidade Assintótica — Teoria × Prática` no relatório experimental do projeto.
+- A análise formaliza a complexidade de tempo de cada operação e deduz a contagem de nós e a profundidade para árvores Merkle genéricas e para o caso de teste específico de 128 blocos (255 nós, profundidade 7).
+- Realizou-se o confronto prático demonstrando o reaproveitamento de nós internos adjacentes no 1º passe e o custo $O(1)$ de validação folha-raiz por bloco no 2º passe sequencial (cache total quente), fundamentando a economia de 33% de CPU medida experimentalmente.
+
 ### Bugs encontrados
 
 **Bug 1 — `tools/scan.c` ausente no diretório de trabalho**
@@ -364,6 +369,7 @@ será feita incrementalmente.
 4. "Criar tests/test_integration.c — um teste de integração end-to-end em C puro (sem depender de shell, PowerShell ou scripts externos)..."
 5. "O edital exige explicitamente 'gráficos gerados a partir de dados reais coletados pela própria equipe'. Preciso criar scripts/plot_benchmark.py..."
 6. "Criar tools/dump_verity.c — ferramenta de inspeção/debug de arquivos .verity..."
+7. "O edital exige explicitamente: 'Dedução teórica dos parâmetros centrais da estrutura de dados do tema e confronto com a prática.' O RELATORIO.md atual não tem essa seção..."
 
 **O que a IA gerou corretamente:**
 - Identificou as posições corretas para alteração no `Makefile` e aplicou a sintaxe correta com tabs.
@@ -374,6 +380,7 @@ será feita incrementalmente.
 - Desenvolveu o código C do teste de integração completo, obedecendo às restrições de formatação de `%lu` e uso de funções C padrão da `stdio.h` para portabilidade.
 - Escreveu o roteiro em Python para ler o CSV gerado e desenhar os subplots lado a lado, configurando o espaçamento categórico do eixo X e exibição limpa em PNG.
 - Codificou a ferramenta `dump_verity.c` em C padrão, usando as funções internas do header `hash_tree.h`, aplicando as saídas robustas de erro pedidas e alinhando perfeitamente a exibição BFS.
+- Redigiu a seção de dedução e confronto em Markdown estruturado, com tabelas limpas e notação LaTeX matemática para as deduções.
 
 **O que a IA errou / o que a equipe corrigiu:**
 - Inicialmente tentou rodar `make clean && make all` diretamente no PowerShell do Windows, gerando erros de sintaxe de operador (`&&`) e comando não encontrado (`make`). A equipe direcionou o uso do `mingw32-make` e a execução em ambiente Git Bash para compatibilidade com a diretiva `mkdir -p`.
