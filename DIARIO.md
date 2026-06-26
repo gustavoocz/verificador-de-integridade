@@ -300,7 +300,7 @@ será feita incrementalmente.
 
 ---
 
-## 26/06/2026 — Integração de scan, target memcheck, README e test_integration.c (E4/Polimento)
+## 26/06/2026 — Integração de scan, target memcheck, README, test_integration.c e plot_benchmark.py (E4/Polimento)
 
 ### Decisões de Projeto
 
@@ -322,6 +322,11 @@ será feita incrementalmente.
 - O teste automatiza o fluxo end-to-end de: criação de imagem de teste (16 blocos de 4096 bytes determinísticos), geração e persistência do `.verity`, recarga em memória, verificação positiva de todos os blocos, escrita direta in-place de byte corrompido no bloco 5, detecção correta de falha de verificação apenas nesse bloco e integridade preservada dos vizinhos.
 - Integrado o executável `$(BUILD)/test_integration` ao Makefile, rodando como a etapa final de validação em `make test`.
 
+**5. Criação do script de geração de gráficos (`plot_benchmark.py`)**
+- Desenvolvido o script `scripts/plot_benchmark.py` em Python utilizando `matplotlib`.
+- O script processa dados a partir de um arquivo CSV de entrada gerado pelas medições ou recorre a dados reais consolidados embutidos como fallback.
+- Gera uma única imagem de alta resolução em `scripts/benchmark_results.png` (12x8 polegadas, 150 DPI) contendo dois gráficos integrados: um comparativo de linha das computações de hash (Passe 1 x Passe 2) e um gráfico de barras ilustrando a taxa de acerto do cache (Hit Ratio) em cada capacidade.
+
 ### Bugs encontrados
 
 **Bug 1 — `tools/scan.c` ausente no diretório de trabalho**
@@ -339,6 +344,11 @@ será feita incrementalmente.
 - **Causa raiz:** Limitação de compatibilidade do compilador legado no Windows.
 - **Solução:** Confirmou-se a necessidade do uso de WSL/Linux para essa verificação (conforme documentado nos comentários do Makefile).
 
+**Bug 4 — Ausência da biblioteca `matplotlib` no ambiente Python**
+- **Descrição:** A execução de `plot_benchmark.py` abortava imediatamente com erro de importação de módulo.
+- **Causa raiz:** A dependência `matplotlib` não estava instalada na instalação global do Python no ambiente do usuário.
+- **Solução:** A biblioteca foi instalada executando o comando `python -m pip install matplotlib` com permissão explícita de processo, sanando a dependência e permitindo a geração física do gráfico PNG.
+
 ### Uso de IA
 
 **Prompts:** 
@@ -346,6 +356,7 @@ será feita incrementalmente.
 2. "O edital penaliza -10% por vazamento de memória detectado. Preciso adicionar ao Makefile um target 'memcheck'..."
 3. "O README.md atual é básico (descrição curta e tabela de cronograma). Preciso de uma versão profissional e completa. O novo README.md deve ter..."
 4. "Criar tests/test_integration.c — um teste de integração end-to-end em C puro (sem depender de shell, PowerShell ou scripts externos)..."
+5. "O edital exige explicitamente 'gráficos gerados a partir de dados reais coletados pela própria equipe'. Preciso criar scripts/plot_benchmark.py..."
 
 **O que a IA gerou corretamente:**
 - Identificou as posições corretas para alteração no `Makefile` e aplicou a sintaxe correta com tabs.
@@ -354,6 +365,8 @@ será feita incrementalmente.
 - Escreveu a regra de compilação do `memcheck` de forma que os testes fossem gerados a partir do código-fonte puro, sem reuso inadequado de arquivos de objeto pré-existentes.
 - Redigiu e estruturou todo o README.md novo utilizando formatação Markdown profissional, tabelas de parâmetros, blocos de código com sintaxe apropriada para shell script, badges funcionais e descrições técnicas concisas.
 - Desenvolveu o código C do teste de integração completo, obedecendo às restrições de formatação de `%lu` e uso de funções C padrão da `stdio.h` para portabilidade.
+- Escreveu o roteiro em Python para ler o CSV gerado e desenhar os subplots lado a lado, configurando o espaçamento categórico do eixo X e exibição limpa em PNG.
 
 **O que a IA errou / o que a equipe corrigiu:**
 - Inicialmente tentou rodar `make clean && make all` diretamente no PowerShell do Windows, gerando erros de sintaxe de operador (`&&`) e comando não encontrado (`make`). A equipe direcionou o uso do `mingw32-make` e a execução em ambiente Git Bash para compatibilidade com a diretiva `mkdir -p`.
+- A IA identificou que o ambiente do usuário carecia do pacote `matplotlib` em Python para executar a plotagem e propôs o comando de instalação para aprovação, que foi concluído com sucesso.
