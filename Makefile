@@ -6,14 +6,14 @@ CFLAGS  = -std=c11 -Wall -Wextra -Werror -g -Isrc
 BUILD   = build
 
 # ── Biblioteca core ───────────────────────────────────────────────────────────
-LIB_SRCS = src/sha256.c src/hash_tree.c src/node_cache.c
+LIB_SRCS = src/sha256.c src/hash_tree.c src/node_cache.c src/verity.c
 LIB_OBJS = $(patsubst src/%.c,$(BUILD)/%.o,$(LIB_SRCS))
 
 # ── Ferramentas CLI ───────────────────────────────────────────────────────────
 TOOLS = $(BUILD)/mkverity $(BUILD)/verify_block $(BUILD)/corrupt
 
 # ── Testes ────────────────────────────────────────────────────────────────────
-TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache
+TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache $(BUILD)/test_verity
 
 .PHONY: all test stress clean
 
@@ -43,6 +43,7 @@ test: $(BUILD) $(TEST_BINS)
 	@$(BUILD)/test_sha256     && echo "[OK] test_sha256"     || (echo "[FAIL] test_sha256";     exit 1)
 	@$(BUILD)/test_hash_tree  && echo "[OK] test_hash_tree"  || (echo "[FAIL] test_hash_tree";  exit 1)
 	@$(BUILD)/test_node_cache && echo "[OK] test_node_cache" || (echo "[FAIL] test_node_cache"; exit 1)
+	@$(BUILD)/test_verity     && echo "[OK] test_verity"     || (echo "[FAIL] test_verity";     exit 1)
 
 $(BUILD)/test_sha256: tests/test_sha256.c $(BUILD)/sha256.o
 	$(CC) $(CFLAGS) $^ -o $@
@@ -51,6 +52,9 @@ $(BUILD)/test_hash_tree: tests/test_hash_tree.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD)/test_node_cache: tests/test_node_cache.c $(LIB_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_verity: tests/test_verity.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 # ── stress ────────────────────────────────────────────────────────────────────

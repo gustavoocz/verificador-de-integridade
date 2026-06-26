@@ -224,6 +224,44 @@ será feita incrementalmente.
 
 ---
 
+## 25/06/2026 — Camada de leitura verificada com cache (E3)
+
+### Decisões de Projeto
+
+**1. Parada antecipada folha→raiz com cache**
+- `verity_read` sobe o caminho calculando o hash de cada nó pai.
+- Se o pai está no cache: compara com o valor computado e para — o caminho acima já foi verificado em leitura anterior.
+- Se o pai não está: compara com a árvore, armazena no cache e continua subindo.
+- Benefício medido: 8 blocos, 2ª leitura completa faz **22 → 16 hashes** (−27%).
+
+**2. Sem cache: apenas 1 hash por leitura (folha)**
+- Sem cache habilitado, `verity_read` calcula apenas `sha256(bloco)` e compara com a folha armazenada. Não sobe o caminho — mais rápido, mas sem caching de nós internos.
+- Essa diferença de comportamento é o que o relatório experimental medirá.
+
+**3. Detecção de inconsistência no cache**
+- Se o cache retorna um hash para o pai, mas o valor computado não bate → corrupção detectada mesmo com cache quente.
+- Garante que um bloco nunca é declarado íntegro incorretamente por causa de um hit de cache desatualizado.
+
+**4. `verity_open` com `cache_capacity = 0`** desabilita o cache (degradação graciosa).
+
+### Bugs encontrados
+*(Nenhum nesta sessão — zero warnings em primeira compilação)*
+
+### Uso de IA
+
+**Prompt:** "Implemente a camada de leitura verificada com cache integrado."
+
+**O que a IA gerou corretamente:**
+- `verity.c` com `verity_open/close/read/print_stats`; algoritmo de parada antecipada folha→raiz com cache.
+- `test_verity.c`: 30 verificações cobrindo open/close, leitura sem/com cache, detecção de corrupção (sem e com cache), parada antecipada mensurável, null-safety.
+- Makefile atualizado com `verity.c` e target `test_verity`.
+
+**O que a IA errou:** Nenhum erro identificado nesta sessão.
+
+**O que a equipe corrigiu:** N/A.
+
+---
+
 ## DD/MM/AAAA — (preencher)
 
 ### Decisões de Projeto
