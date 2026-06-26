@@ -63,7 +63,9 @@ O benchmark é reproduzível via:
 | 128 | 382 | 382 | 0 % | 49,61 % |
 | **256** | **382** | **256** | **−33 %** | **100,00 %** |
 
-> **Observação:** com `cache_cap ≥ 255` (igual ao total de nós da árvore), todos os nós internos são armazenados no passe 1. No passe 2, cada leitura de bloco encontra imediatamente o nó pai no cache e para — caindo de 382 para 256 hash computations (apenas os hashes das folhas, 1 por bloco).
+![Gráfico: Hash Computations × Cache Capacity](scripts/benchmark_results.png)
+
+> **Figura 1** — Hash computations por passe para cada capacidade de cache. Com `cache_cap = 256` (≥ total de nós), o 2º passe cai de 382 para 256 computações (−33%).
 
 ### 3.2 Interpretação por faixa de cache
 

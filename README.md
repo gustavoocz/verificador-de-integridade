@@ -144,6 +144,12 @@ Os experimentos práticos confirmam o benefício da cache de nós em acessos seq
 * **Cenário Sem Cache:** No 2º passe de leitura, cada bloco lido requer recomeçar a computação (1 hash por leitura de folha), totalizando **382 computações**.
 * **Cenário Com Cache total (Capacidade = 256):** No 2º passe, as subárvores quentes são lidas da cache. O número total de hashes cai para **256 computações**, representando uma **redução de 33% no esforço de CPU**.
 
+Para gerar ou atualizar o gráfico comparativo do benchmark, execute:
+```bash
+python scripts/plot_benchmark.py
+# Gera: scripts/benchmark_results.png
+```
+
 ---
 
 ## 🧪 Cobertura de Testes
