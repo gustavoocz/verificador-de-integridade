@@ -10,7 +10,7 @@ LIB_SRCS = src/sha256.c src/hash_tree.c src/node_cache.c src/verity.c
 LIB_OBJS = $(patsubst src/%.c,$(BUILD)/%.o,$(LIB_SRCS))
 
 # ── Ferramentas CLI ───────────────────────────────────────────────────────────
-TOOLS = $(BUILD)/mkverity $(BUILD)/verify_block $(BUILD)/corrupt $(BUILD)/bench $(BUILD)/scan
+TOOLS = $(BUILD)/mkverity $(BUILD)/verify_block $(BUILD)/corrupt $(BUILD)/bench $(BUILD)/scan $(BUILD)/dump_verity
 
 # ── Testes ────────────────────────────────────────────────────────────────────
 TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache $(BUILD)/test_verity $(BUILD)/test_integration
@@ -41,6 +41,9 @@ $(BUILD)/bench: tools/bench.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD)/scan: tools/scan.c $(LIB_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/dump_verity: tools/dump_verity.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 # ── test ──────────────────────────────────────────────────────────────────────

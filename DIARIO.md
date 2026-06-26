@@ -300,7 +300,7 @@ será feita incrementalmente.
 
 ---
 
-## 26/06/2026 — Integração de scan, target memcheck, README, test_integration.c e plot_benchmark.py (E4/Polimento)
+## 26/06/2026 — Integração de scan, target memcheck, README, test_integration.c, plot_benchmark.py e dump_verity.c (E4/Polimento)
 
 ### Decisões de Projeto
 
@@ -326,6 +326,12 @@ será feita incrementalmente.
 - Desenvolvido o script `scripts/plot_benchmark.py` em Python utilizando `matplotlib`.
 - O script processa dados a partir de um arquivo CSV de entrada gerado pelas medições ou recorre a dados reais consolidados embutidos como fallback.
 - Gera uma única imagem de alta resolução em `scripts/benchmark_results.png` (12x8 polegadas, 150 DPI) contendo dois gráficos integrados: um comparativo de linha das computações de hash (Passe 1 x Passe 2) e um gráfico de barras ilustrando a taxa de acerto do cache (Hit Ratio) em cada capacidade.
+
+**6. Criação da ferramenta de depuração `dump_verity.c`**
+- Desenvolvida a ferramenta de linha de comando `tools/dump_verity.c` para inspeção e debug de arquivos persistidos `.verity`.
+- A CLI lê o cabeçalho do arquivo e imprime magic, versão, block_size, num_blocks, num_leaves e num_nodes calculados, junto ao root_hash em hexadecimal.
+- Caso seja fornecido o argumento `--full`, realiza a impressão de todos os nós em ordem BFS na árvore, rotulando-os dinamicamente (raiz, interno ou folha) e alinhando perfeitamente a saída dos hashes.
+- A ferramenta foi registrada na variável `TOOLS` e integrada com sua respectiva regra de compilação no Makefile.
 
 ### Bugs encontrados
 
@@ -357,6 +363,7 @@ será feita incrementalmente.
 3. "O README.md atual é básico (descrição curta e tabela de cronograma). Preciso de uma versão profissional e completa. O novo README.md deve ter..."
 4. "Criar tests/test_integration.c — um teste de integração end-to-end em C puro (sem depender de shell, PowerShell ou scripts externos)..."
 5. "O edital exige explicitamente 'gráficos gerados a partir de dados reais coletados pela própria equipe'. Preciso criar scripts/plot_benchmark.py..."
+6. "Criar tools/dump_verity.c — ferramenta de inspeção/debug de arquivos .verity..."
 
 **O que a IA gerou corretamente:**
 - Identificou as posições corretas para alteração no `Makefile` e aplicou a sintaxe correta com tabs.
@@ -366,6 +373,7 @@ será feita incrementalmente.
 - Redigiu e estruturou todo o README.md novo utilizando formatação Markdown profissional, tabelas de parâmetros, blocos de código com sintaxe apropriada para shell script, badges funcionais e descrições técnicas concisas.
 - Desenvolveu o código C do teste de integração completo, obedecendo às restrições de formatação de `%lu` e uso de funções C padrão da `stdio.h` para portabilidade.
 - Escreveu o roteiro em Python para ler o CSV gerado e desenhar os subplots lado a lado, configurando o espaçamento categórico do eixo X e exibição limpa em PNG.
+- Codificou a ferramenta `dump_verity.c` em C padrão, usando as funções internas do header `hash_tree.h`, aplicando as saídas robustas de erro pedidas e alinhando perfeitamente a exibição BFS.
 
 **O que a IA errou / o que a equipe corrigiu:**
 - Inicialmente tentou rodar `make clean && make all` diretamente no PowerShell do Windows, gerando erros de sintaxe de operador (`&&`) e comando não encontrado (`make`). A equipe direcionou o uso do `mingw32-make` e a execução em ambiente Git Bash para compatibilidade com a diretiva `mkdir -p`.
