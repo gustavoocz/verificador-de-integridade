@@ -262,6 +262,44 @@ será feita incrementalmente.
 
 ---
 
+## 25/06/2026 — Scripts de benchmark e relatório experimental (E4)
+
+### Decisões de Projeto
+
+**1. `bench.c` como ferramenta C nativa (não shell script)**
+- Garante portabilidade Windows/Linux e compilação com `-Werror`.
+- Saída em CSV para fácil importação em planilha ou Python.
+- Mede `clock()` (tempo de CPU) — adequado para comparar o custo de SHA-256.
+
+**2. `cache_cap = 0` comporta-se diferente de cache habilitado**
+- Sem cache: `verity_read` só calcula 1 hash por bloco (folha). Caminho completo não é percorrido.
+- Com cache: percorre o caminho completo no 1º passe para popular o cache; poupa no 2º.
+- Essa diferença foi documentada e analisada no relatório.
+
+**3. Resultado experimental confirmado**
+- Com `cache_cap = 256` (≥ total de nós): 2º passe usa **256 hashes** (1/bloco) em vez de 382 → **redução de 33 %**.
+- Teste de fogo: 128 blocos, bloco 10 corrompido → detectado; 127 demais íntegros → OK.
+
+### Bugs encontrados
+*(Nenhum nesta sessão)*
+
+### Uso de IA
+
+**Prompt:** "Gere os scripts de benchmark e relatório."
+
+**O que a IA gerou corretamente:**
+- `tools/bench.c` com saída CSV, 2 passes, suporte a `n_passes` configurável.
+- `scripts/stress.ps1`: automação completa do teste de fogo em PowerShell.
+- `scripts/run_benchmark.ps1`: roda bench com 7 capacidades de cache e exibe tabela.
+- `RELATORIO.md`: relatório experimental com dados reais coletados do benchmark.
+- Makefile atualizado com target `bench`.
+
+**O que a IA errou:** Nenhum erro identificado nesta sessão.
+
+**O que a equipe corrigiu:** N/A.
+
+---
+
 ## DD/MM/AAAA — (preencher)
 
 ### Decisões de Projeto
