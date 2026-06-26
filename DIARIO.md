@@ -300,15 +300,34 @@ será feita incrementalmente.
 
 ---
 
-## DD/MM/AAAA — (preencher)
+## 26/06/2026 — Integração de scan e polimento de compilação (E4/Polimento)
 
 ### Decisões de Projeto
-- ...
+
+**1. Integração da ferramenta `scan` ao sistema de compilação**
+- A ferramenta `tools/scan.c` já existia no projeto (varre todos os blocos de uma imagem e lista os corrompidos) mas não estava incluída na variável `TOOLS` nem possuía regra de compilação no `Makefile`.
+- Adicionado `$(BUILD)/scan` a `TOOLS` e criada a regra correspondente para compilá-lo com as flags padrão do projeto.
 
 ### Bugs encontrados
-- ...
 
-### Uso de IA (se houver)
-- **Prompt:**
-- **O que a IA gerou corretamente:**
-- **O que a IA errou / o que a equipe corrigiu:**
+**Bug 1 — `tools/scan.c` ausente no diretório de trabalho**
+- **Descrição:** O build falhava com `No rule to make target 'tools/scan.c', needed by 'build/scan'`.
+- **Causa raiz:** O arquivo foi acidentalmente excluído do disco durante reversões manuais de alterações anteriores (já que não havia sido commitado no Git).
+- **Solução:** O arquivo foi recuperado e restaurado a partir dos logs de transcrição da conversa anterior, onde seu conteúdo estava preservado.
+
+**Bug 2 — Diretório `-p` gerado no Windows durante compilação com `make` nativo**
+- **Descrição:** A diretiva `mkdir -p` no Makefile interpretada pelo shell padrão `cmd.exe` gerava uma pasta literal `-p` e falhava no build subsequente.
+- **Causa raiz:** O `mkdir` do Prompt de Comando do Windows (`cmd.exe`) não suporta a flag `-p` e tenta criar um diretório chamado `-p`.
+- **Solução:** A compilação deve ser executada usando o shell do Git Bash (`sh.exe`), o que garante compatibilidade total com os comandos Unix do Makefile. O diretório temporário `-p` foi removido.
+
+### Uso de IA
+
+**Prompt:** "O arquivo tools/scan.c já existe no projeto... Preciso que você: 1. Adicione $(BUILD)/scan... 4. Confirme que o Makefile ainda compila sem warnings com: make clean && make all" e "analise o arquivo pdf e se certifique q esse commit estará seguindo estritamente todas as regras"
+
+**O que a IA gerou corretamente:**
+- Identificou as posições corretas para alteração no `Makefile` e aplicou a sintaxe correta com tabs.
+- Recuperou o código fonte completo de `tools/scan.c` a partir dos metadados da transcrição histórica da conversa e recriou o arquivo.
+- Validou que o projeto compila sem warnings sob o compilador `gcc 4.9.2` e que todos os 137 testes unitários passam com sucesso.
+
+**O que a IA errou / o que a equipe corrigiu:**
+- Inicialmente tentou rodar `make clean && make all` diretamente no PowerShell do Windows, gerando erros de sintaxe de operador (`&&`) e comando não encontrado (`make`). A equipe direcionou o uso do `mingw32-make` e a execução em ambiente Git Bash para compatibilidade com a diretiva `mkdir -p`.
