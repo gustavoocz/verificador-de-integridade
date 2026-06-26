@@ -15,7 +15,7 @@ TOOLS = $(BUILD)/mkverity $(BUILD)/verify_block $(BUILD)/corrupt $(BUILD)/bench 
 # ── Testes ────────────────────────────────────────────────────────────────────
 TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache $(BUILD)/test_verity
 
-.PHONY: all test stress clean
+.PHONY: all test stress clean memcheck
 
 # ── all ───────────────────────────────────────────────────────────────────────
 all: $(BUILD) $(LIB_OBJS) $(TOOLS)
@@ -80,6 +80,21 @@ stress: $(BUILD) $(TOOLS)
 	$(BUILD)/verify_block $(BUILD)/stress.img $(BUILD)/stress.verity 0
 	rm -f $(BUILD)/stress.img $(BUILD)/stress.verity
 	@echo "Teste de estresse concluido."
+
+# ── memcheck ──────────────────────────────────────────────────────────────────
+# ATENÇÃO: TDM-GCC 4.9.2 no Windows NÃO suporta ASAN. Use WSL ou Linux para este target.
+memcheck:
+	@echo "=== Compilando testes com AddressSanitizer e UBSan ==="
+	@mkdir -p $(BUILD)
+	$(CC) $(CFLAGS) -fsanitize=address,undefined src/sha256.c tests/test_sha256.c -o $(BUILD)/test_sha256_asan
+	$(CC) $(CFLAGS) -fsanitize=address,undefined $(LIB_SRCS) tests/test_hash_tree.c -o $(BUILD)/test_hash_tree_asan
+	$(CC) $(CFLAGS) -fsanitize=address,undefined $(LIB_SRCS) tests/test_node_cache.c -o $(BUILD)/test_node_cache_asan
+	$(CC) $(CFLAGS) -fsanitize=address,undefined $(LIB_SRCS) tests/test_verity.c -o $(BUILD)/test_verity_asan
+	@echo "=== Rodando testes com AddressSanitizer e UBSan ==="
+	$(BUILD)/test_sha256_asan
+	$(BUILD)/test_hash_tree_asan
+	$(BUILD)/test_node_cache_asan
+	$(BUILD)/test_verity_asan
 
 # ── clean ─────────────────────────────────────────────────────────────────────
 clean:

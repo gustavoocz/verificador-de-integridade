@@ -300,13 +300,18 @@ será feita incrementalmente.
 
 ---
 
-## 26/06/2026 — Integração de scan e polimento de compilação (E4/Polimento)
+## 26/06/2026 — Integração de scan e target memcheck com sanitizers (E4/Polimento)
 
 ### Decisões de Projeto
 
 **1. Integração da ferramenta `scan` ao sistema de compilação**
 - A ferramenta `tools/scan.c` já existia no projeto (varre todos os blocos de uma imagem e lista os corrompidos) mas não estava incluída na variável `TOOLS` nem possuía regra de compilação no `Makefile`.
 - Adicionado `$(BUILD)/scan` a `TOOLS` e criada a regra correspondente para compilá-lo com as flags padrão do projeto.
+
+**2. Adição do target `memcheck` com sanitizers (AddressSanitizer e UBSan)**
+- Adicionado o target `memcheck` ao Makefile e ao `.PHONY`.
+- O target recompila do zero todo o código fonte (sem reutilizar arquivos `.o` normais compilados anteriormente) injetando as flags `-fsanitize=address,undefined` para garantir a detecção de vazamentos e erros de acesso a memória na suite de testes.
+- Devido à limitação do compilador TDM-GCC 4.9.2 no Windows (que não suporta sanitizers nativos), foi incluído um comentário claro no Makefile orientando a execução do target em ambiente WSL ou Linux.
 
 ### Bugs encontrados
 
@@ -320,14 +325,22 @@ será feita incrementalmente.
 - **Causa raiz:** O `mkdir` do Prompt de Comando do Windows (`cmd.exe`) não suporta a flag `-p` e tenta criar um diretório chamado `-p`.
 - **Solução:** A compilação deve ser executada usando o shell do Git Bash (`sh.exe`), o que garante compatibilidade total com os comandos Unix do Makefile. O diretório temporário `-p` foi removido.
 
+**Bug 3 — Falha de linkagem com sanitizers no Windows (TDM-GCC 4.9.2)**
+- **Descrição:** Ao rodar `make memcheck` no Windows nativo, ocorria falha de link com `cannot find -lasan` e `cannot find -lubsan`.
+- **Causa raiz:** Limitação de compatibilidade do compilador legado no Windows.
+- **Solução:** Confirmou-se a necessidade do uso de WSL/Linux para essa verificação (conforme documentado nos comentários do Makefile).
+
 ### Uso de IA
 
-**Prompt:** "O arquivo tools/scan.c já existe no projeto... Preciso que você: 1. Adicione $(BUILD)/scan... 4. Confirme que o Makefile ainda compila sem warnings com: make clean && make all" e "analise o arquivo pdf e se certifique q esse commit estará seguindo estritamente todas as regras"
+**Prompts:** 
+1. "O arquivo tools/scan.c já existe no projeto... Preciso que você: 1. Adicione $(BUILD)/scan... 4. Confirme que o Makefile ainda compila sem warnings com: make clean && make all" e "analise o arquivo pdf e se certifique q esse commit estará seguindo estritamente todas as regras"
+2. "O edital penaliza -10% por vazamento de memória detectado. Preciso adicionar ao Makefile um target 'memcheck'..."
 
 **O que a IA gerou corretamente:**
 - Identificou as posições corretas para alteração no `Makefile` e aplicou a sintaxe correta com tabs.
 - Recuperou o código fonte completo de `tools/scan.c` a partir dos metadados da transcrição histórica da conversa e recriou o arquivo.
-- Validou que o projeto compila sem warnings sob o compilador `gcc 4.9.2` e que todos os 137 testes unitários passam com sucesso.
+- Validou que o projeto compila sem warnings sob o compilador `gcc 4.9.2`.
+- Escreveu a regra de compilação do `memcheck` de forma que os testes fossem gerados a partir do código-fonte puro, sem reuso inadequado de arquivos de objeto pré-existentes.
 
 **O que a IA errou / o que a equipe corrigiu:**
 - Inicialmente tentou rodar `make clean && make all` diretamente no PowerShell do Windows, gerando erros de sintaxe de operador (`&&`) e comando não encontrado (`make`). A equipe direcionou o uso do `mingw32-make` e a execução em ambiente Git Bash para compatibilidade com a diretiva `mkdir -p`.
