@@ -13,7 +13,7 @@ LIB_OBJS = $(patsubst src/%.c,$(BUILD)/%.o,$(LIB_SRCS))
 TOOLS = $(BUILD)/mkverity $(BUILD)/verify_block $(BUILD)/corrupt $(BUILD)/bench $(BUILD)/scan
 
 # ── Testes ────────────────────────────────────────────────────────────────────
-TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache $(BUILD)/test_verity
+TEST_BINS = $(BUILD)/test_sha256 $(BUILD)/test_hash_tree $(BUILD)/test_node_cache $(BUILD)/test_verity $(BUILD)/test_integration
 
 .PHONY: all test stress clean memcheck
 
@@ -50,6 +50,7 @@ test: $(BUILD) $(TEST_BINS)
 	@$(BUILD)/test_hash_tree  && echo "[OK] test_hash_tree"  || (echo "[FAIL] test_hash_tree";  exit 1)
 	@$(BUILD)/test_node_cache && echo "[OK] test_node_cache" || (echo "[FAIL] test_node_cache"; exit 1)
 	@$(BUILD)/test_verity     && echo "[OK] test_verity"     || (echo "[FAIL] test_verity";     exit 1)
+	@$(BUILD)/test_integration && echo "[OK] test_integration" || (echo "[FAIL] test_integration"; exit 1)
 
 $(BUILD)/test_sha256: tests/test_sha256.c $(BUILD)/sha256.o
 	$(CC) $(CFLAGS) $^ -o $@
@@ -61,6 +62,9 @@ $(BUILD)/test_node_cache: tests/test_node_cache.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD)/test_verity: tests/test_verity.c $(LIB_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_integration: tests/test_integration.c $(LIB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 # ── stress ────────────────────────────────────────────────────────────────────
